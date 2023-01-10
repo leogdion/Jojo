@@ -20,6 +20,7 @@
 		B3440598296CEBA300A0038D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B344059B296CEBA300A0038D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B34405A2296CEDD200A0038D /* Jojo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Jojo.entitlements; sourceTree = "<group>"; };
+		B3B304F6296DDB9B0011055C /* Jojo */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Jojo; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +37,7 @@
 		B3440588296CEBA100A0038D = {
 			isa = PBXGroup;
 			children = (
+				B3B304F5296DDB9B0011055C /* Packages */,
 				B3440593296CEBA100A0038D /* Jojo */,
 				B3440592296CEBA100A0038D /* Products */,
 			);
@@ -67,6 +69,14 @@
 				B344059B296CEBA300A0038D /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		B3B304F5296DDB9B0011055C /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				B3B304F6296DDB9B0011055C /* Jojo */,
+			);
+			path = Packages;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
