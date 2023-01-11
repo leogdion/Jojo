@@ -101,6 +101,33 @@ public class ServerApplication {
       }
         return .ok
     }
+    
+    app.get("sim") { request async throws -> String in
+      let process = Process()
+      let pipe = Pipe()
+      process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+      process.arguments = [
+        "simctl",
+        "get_app_container",
+        "booted",
+        "com.BrightDigit.Jojo.watchkitapp",
+        "data"
+      ]
+      process.standardOutput = pipe
+      try process.run()
+      process.waitUntilExit()
+      guard let data = try pipe.fileHandleForReading.readToEnd() else {
+        throw Abort(.notFound)
+      }
+      
+      guard let string = String(data: data, encoding: .utf8) else {
+        throw Abort(.notFound)
+      }
+      
+      
+      
+      return string
+    }
   }
   
   public init () throws {
