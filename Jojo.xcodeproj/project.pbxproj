@@ -15,6 +15,7 @@
 		B38B7430296E406500395DBA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38B742F296E406500395DBA /* ContentView.swift */; };
 		B38B7432296E406600395DBA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B38B7431296E406600395DBA /* Assets.xcassets */; };
 		B38B7435296E406600395DBA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B38B7434296E406600395DBA /* Preview Assets.xcassets */; };
+		B3B2DC6C296F3B2E003F0CF8 /* JojoModels in Frameworks */ = {isa = PBXBuildFile; productRef = B3B2DC6B296F3B2E003F0CF8 /* JojoModels */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3B2DC6C296F3B2E003F0CF8 /* JojoModels in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,6 +59,7 @@
 				B3440593296CEBA100A0038D /* Jojo */,
 				B38B742C296E406500395DBA /* JojoWatch Watch App */,
 				B3440592296CEBA100A0038D /* Products */,
+				B3B2DC68296F3AA7003F0CF8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +111,13 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		B3B2DC68296F3AA7003F0CF8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B3B304F5296DDB9B0011055C /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -132,6 +142,9 @@
 			dependencies = (
 			);
 			name = Jojo;
+			packageProductDependencies = (
+				B3B2DC6B296F3B2E003F0CF8 /* JojoModels */,
+			);
 			productName = Jojo;
 			productReference = B3440591296CEBA100A0038D /* Jojo.app */;
 			productType = "com.apple.product-type.application";
@@ -498,6 +511,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B3B2DC6B296F3B2E003F0CF8 /* JojoModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = JojoModels;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B3440589296CEBA100A0038D /* Project object */;
 }

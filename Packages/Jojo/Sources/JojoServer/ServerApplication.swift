@@ -22,6 +22,7 @@ public final class User: Model {
   }
   
   enum Key : FieldKey {
+    case email
     case firstName
     case lastName
     case appleUserIdentifier
@@ -29,6 +30,10 @@ public final class User: Model {
   
   @ID(key: .id)
   public var id: UUID?
+  
+  
+  @Field(key: Key.email.rawValue)
+  public var email: String?
   
   @Field(key: Key.firstName.rawValue)
   public var firstName: String?
@@ -43,7 +48,7 @@ public final class User: Model {
   
   public static let schema: String = "User"
   
-  public init(appleUserIdentifier : String, firstName : String? = "", lastName : String? = nil, id: UUID? = nil) {
+  public init(appleUserIdentifier : String, email: String? = nil, firstName : String? = nil, lastName : String? = nil, id: UUID? = nil) {
     self.id = id
   }
 }
@@ -56,6 +61,7 @@ extension User {
   func patch(body: SIWARequestBody) {
     self.lastName = body.lastName ?? self.lastName
     self.firstName = body.firstName ?? self.firstName
+    self.email = body.email ?? self.email
     self.appleUserIdentifier = body.appleIdentityToken
   }
 }
@@ -64,6 +70,7 @@ public struct UserMigration : AsyncMigration {
   public func prepare(on database: FluentKit.Database) async throws {
     try await database.schema(User.schema)
       .id()
+      .field(User.Key.email.rawValue, .string)
       .field(User.Key.firstName.rawValue, .string)
       .field(User.Key.lastName.rawValue, .string)
       .field(User.Key.appleUserIdentifier.rawValue, .string, .required)
@@ -79,6 +86,27 @@ public struct UserMigration : AsyncMigration {
 public class ServerApplication {
   var env : Environment
   let app : Application
+  
+  public static func getSimulatorAppDataPath () throws -> String? {
+    let process = Process()
+    let pipe = Pipe()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+    process.arguments = [
+      "simctl",
+      "get_app_container",
+      "booted",
+      "com.BrightDigit.Jojo.watchkitapp",
+      "data"
+    ]
+    process.standardOutput = pipe
+    try process.run()
+    process.waitUntilExit()
+    guard let data = try pipe.fileHandleForReading.readToEnd() else {
+      return nil
+    }
+    
+    return String(data: data, encoding: .utf8)
+  }
   // configures your application
   public static func configure(_ app: Application) throws {
       // uncomment to serve files from /Public folder
@@ -102,31 +130,33 @@ public class ServerApplication {
         return .ok
     }
     
+    app.post("sim") { request async throws -> HTTPStatus in
+      guard let dataDirectoryPath = try Self.getSimulatorAppDataPath() else {
+        throw Abort(.notFound)
+      }
+      let dataDirectoryURL = URL(fileURLWithPath: dataDirectoryPath)
+      let tmpDirectoryURL = dataDirectoryURL.appendingPathComponent("tmp", isDirectory: true)
+      let filePath = tmpDirectoryURL.appendingPathComponent( "com.BrightDigit.Jojo.SignInWithApple").path
+      
+      guard let body = request.body.data  else {
+        throw Abort(.noContent)
+      }
+      
+      print(filePath)
+      try FileManager.default.createFile(atPath: filePath, contents: Data(buffer: body))
+      
+      return .accepted
+    }
     app.get("sim") { request async throws -> String in
-      let process = Process()
-      let pipe = Pipe()
-      process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
-      process.arguments = [
-        "simctl",
-        "get_app_container",
-        "booted",
-        "com.BrightDigit.Jojo.watchkitapp",
-        "data"
-      ]
-      process.standardOutput = pipe
-      try process.run()
-      process.waitUntilExit()
-      guard let data = try pipe.fileHandleForReading.readToEnd() else {
+   
+      
+      
+      
+      guard let path = try Self.getSimulatorAppDataPath() else {
         throw Abort(.notFound)
       }
       
-      guard let string = String(data: data, encoding: .utf8) else {
-        throw Abort(.notFound)
-      }
-      
-      
-      
-      return string
+      return path
     }
   }
   
