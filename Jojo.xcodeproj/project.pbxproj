@@ -11,6 +11,10 @@
 		B3440597296CEBA100A0038D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3440596296CEBA100A0038D /* ContentView.swift */; };
 		B3440599296CEBA300A0038D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3440598296CEBA300A0038D /* Assets.xcassets */; };
 		B344059C296CEBA300A0038D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B344059B296CEBA300A0038D /* Preview Assets.xcassets */; };
+		B38B742E296E406500395DBA /* JojoWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38B742D296E406500395DBA /* JojoWatchApp.swift */; };
+		B38B7430296E406500395DBA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38B742F296E406500395DBA /* ContentView.swift */; };
+		B38B7432296E406600395DBA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B38B7431296E406600395DBA /* Assets.xcassets */; };
+		B38B7435296E406600395DBA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B38B7434296E406600395DBA /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,11 +24,23 @@
 		B3440598296CEBA300A0038D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B344059B296CEBA300A0038D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B34405A2296CEDD200A0038D /* Jojo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Jojo.entitlements; sourceTree = "<group>"; };
+		B38B742B296E406500395DBA /* JojoWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "JojoWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B38B742D296E406500395DBA /* JojoWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JojoWatchApp.swift; sourceTree = "<group>"; };
+		B38B742F296E406500395DBA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B38B7431296E406600395DBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B38B7434296E406600395DBA /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B3B304F6296DDB9B0011055C /* Jojo */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Jojo; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		B344058E296CEBA100A0038D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B38B7428296E406500395DBA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -39,6 +55,7 @@
 			children = (
 				B3B304F5296DDB9B0011055C /* Packages */,
 				B3440593296CEBA100A0038D /* Jojo */,
+				B38B742C296E406500395DBA /* JojoWatch Watch App */,
 				B3440592296CEBA100A0038D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -47,6 +64,7 @@
 			isa = PBXGroup;
 			children = (
 				B3440591296CEBA100A0038D /* Jojo.app */,
+				B38B742B296E406500395DBA /* JojoWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -67,6 +85,25 @@
 			isa = PBXGroup;
 			children = (
 				B344059B296CEBA300A0038D /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		B38B742C296E406500395DBA /* JojoWatch Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				B38B742D296E406500395DBA /* JojoWatchApp.swift */,
+				B38B742F296E406500395DBA /* ContentView.swift */,
+				B38B7431296E406600395DBA /* Assets.xcassets */,
+				B38B7433296E406600395DBA /* Preview Content */,
+			);
+			path = "JojoWatch Watch App";
+			sourceTree = "<group>";
+		};
+		B38B7433296E406600395DBA /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				B38B7434296E406600395DBA /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
@@ -99,6 +136,23 @@
 			productReference = B3440591296CEBA100A0038D /* Jojo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B38B742A296E406500395DBA /* JojoWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B38B7438296E406600395DBA /* Build configuration list for PBXNativeTarget "JojoWatch Watch App" */;
+			buildPhases = (
+				B38B7427296E406500395DBA /* Sources */,
+				B38B7428296E406500395DBA /* Frameworks */,
+				B38B7429296E406500395DBA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "JojoWatch Watch App";
+			productName = "JojoWatch Watch App";
+			productReference = B38B742B296E406500395DBA /* JojoWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -110,6 +164,9 @@
 				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					B3440590296CEBA100A0038D = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					B38B742A296E406500395DBA = {
 						CreatedOnToolsVersion = 14.2;
 					};
 				};
@@ -128,6 +185,7 @@
 			projectRoot = "";
 			targets = (
 				B3440590296CEBA100A0038D /* Jojo */,
+				B38B742A296E406500395DBA /* JojoWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
@@ -142,6 +200,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B38B7429296E406500395DBA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B38B7435296E406600395DBA /* Preview Assets.xcassets in Resources */,
+				B38B7432296E406600395DBA /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -151,6 +218,15 @@
 			files = (
 				B3440597296CEBA100A0038D /* ContentView.swift in Sources */,
 				B3440595296CEBA100A0038D /* JojoApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B38B7427296E406500395DBA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B38B7430296E406500395DBA /* ContentView.swift in Sources */,
+				B38B742E296E406500395DBA /* JojoWatchApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,6 +407,66 @@
 			};
 			name = Release;
 		};
+		B38B7436296E406600395DBA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"JojoWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = MLT7M394S7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = JojoWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = .watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 9.1;
+			};
+			name = Debug;
+		};
+		B38B7437296E406600395DBA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"JojoWatch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = MLT7M394S7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = JojoWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = .watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 9.1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -348,6 +484,15 @@
 			buildConfigurations = (
 				B34405A0296CEBA300A0038D /* Debug */,
 				B34405A1296CEBA300A0038D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B38B7438296E406600395DBA /* Build configuration list for PBXNativeTarget "JojoWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B38B7436296E406600395DBA /* Debug */,
+				B38B7437296E406600395DBA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
