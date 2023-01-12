@@ -105,7 +105,7 @@ public class ServerApplication {
       return nil
     }
     
-    return String(data: data, encoding: .utf8)
+    return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
   }
   // configures your application
   public static func configure(_ app: Application) throws {
@@ -113,6 +113,7 @@ public class ServerApplication {
       // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
     app.jwt.apple.applicationIdentifier = "com.BrightDigit.Jojo.SignInWithApple"
+    app.jwt.apple
       // register routes
     app.get("apple") { req async throws -> HTTPStatus in
       let userBody = try req.content.decode(SIWARequestBody.self)
@@ -135,14 +136,16 @@ public class ServerApplication {
         throw Abort(.notFound)
       }
       let dataDirectoryURL = URL(fileURLWithPath: dataDirectoryPath)
-      let tmpDirectoryURL = dataDirectoryURL.appendingPathComponent("tmp", isDirectory: true)
-      let filePath = tmpDirectoryURL.appendingPathComponent( "com.BrightDigit.Jojo.SignInWithApple").path
       
+      let tmpDirectoryURL = dataDirectoryURL.appendingPathComponent("tmp", isDirectory: true)
+      
+      let fileURL = tmpDirectoryURL.appendingPathComponent( "com.BrightDigit.Jojo.SignInWithApple")
+      
+      let filePath = fileURL.absoluteURL.path
       guard let body = request.body.data  else {
         throw Abort(.noContent)
       }
       
-      print(filePath)
       try FileManager.default.createFile(atPath: filePath, contents: Data(buffer: body))
       
       return .accepted
