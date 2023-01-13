@@ -8,8 +8,8 @@ final class Token: Model {
 
   static var schema: String = "UserToken"
 
-  @ID(key: .id)
-  var id: UUID?
+  @ID(custom: .id, generatedBy: .user)
+  var id: String?
 
   @Parent(key: "userID")
   var user: User
@@ -21,7 +21,7 @@ final class Token: Model {
   var createdAt: Date?
   
   /// Creates a new `UserToken`.
-  init(id: UUID? = nil, userID: UUID) {
+  init(token: String? = nil, userID: UUID) {
     self.id = id
     $user.id = userID
   }
@@ -43,7 +43,8 @@ extension Token {
   }
 }
 
-extension Token : TokenAuthenticatable {
+extension Token : JWTTokenAuthenticatable {
+
   
   static var userKey: KeyPath<Token, Parent<User>> {
     return \.$user

@@ -39,3 +39,15 @@ public final class User: Model {
     self.id = id
   }
 }
+
+import Vapor
+
+// MARK: - Token Creation
+extension User {
+  func createAccessToken(req: Request) throws -> Token {
+    return try Token(
+      token: [UInt8].random(count: 32).base64,
+      userID: self.requireID()
+    )
+  }
+}

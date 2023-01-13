@@ -1,10 +1,9 @@
 import Fluent
+import Vapor
+import Foundation
 
-
-protocol TokenAuthenticatable : Model {
-  associatedtype User: Model
-  static var userKey: KeyPath<Self, Parent<User>> { get }
-  //static var idKey: KeyPath<Self, Field<Self.IDValue> { get }
+protocol JWTTokenAuthenticatable : Model {
   static var updatedAtKey: KeyPath<Self, TimestampProperty<Token, DefaultTimestampFormat>> { get }
-  var isValid: Bool { get }
+    associatedtype User: Model
+    static var userKey: KeyPath<Self, Parent<User>> { get }
 }

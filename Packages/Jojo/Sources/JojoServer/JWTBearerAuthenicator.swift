@@ -4,7 +4,7 @@ import JWT
 
 protocol JWTBearerAuthenicator : AsyncMiddleware {
   associatedtype JWTPayloadType : JWTPayload
-  associatedtype TokenModel : TokenAuthenticatable
+  associatedtype TokenModel : JWTTokenAuthenticatable
   associatedtype UserKey : StorageKey where UserKey.Value == UserModel
   
   typealias UserModel = TokenModel.User
@@ -35,9 +35,9 @@ extension JWTBearerAuthenicator {
       guard let token = try await TokenModel.find(id, on: db) else {
         throw Abort(.unauthorized)
       }
-      guard token.isValid  else {
-        throw Abort(.unauthorized)
-      }
+//      guard token.isValid  else {
+//        throw Abort(.unauthorized)
+//      }
       let user = try await token[keyPath: TokenModel.userKey].get(on: db)
       token[keyPath: TokenModel.updatedAtKey].timestamp = Date()
       try await token.save(on: db)
@@ -61,6 +61,12 @@ extension JWTBearerAuthenicator {
     request.storage.set(UserKey.self, to: user)
     return try await next.respond(to: request)
       
+  }
+}
+
+extension JWTBearerAuthenicator where TokenModel.IDValue == String {
+  func tokenID(fromBearer bearer: BearerAuthorization) throws -> TokenModel.IDValue {
+    return bearer.token
   }
 }
 
