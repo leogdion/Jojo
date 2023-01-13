@@ -14,6 +14,26 @@ import FluentKit
 
 import JojoModels
 
+public struct UserResponse : Codable {
+  internal init(accessToken: String, email: String? = nil, firstName: String? = nil, lastName: String? = nil) {
+    self.accessToken = accessToken
+    self.email = email
+    self.firstName = firstName
+    self.lastName = lastName
+  }
+  
+  let accessToken : String
+  let email : String?
+  let firstName : String?
+  let lastName : String?
+}
+
+extension UserResponse : Content {
+  init(accessToken: String, user: User) {
+    self.init(accessToken: accessToken, email: user.email, firstName: user.firstName, lastName: user.lastName)
+  }
+}
+
 public class ServerApplication {
   var env : Environment
   let app : Application
@@ -39,26 +59,38 @@ public class ServerApplication {
     return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
   }
   // configures your application
+  fileprivate static func user(_ req: Request, _ token: AppleIdentityToken, _ userBody: SIWARequestBody) async throws -> User {
+    let user = try await User.query(on: req.db)
+      .filter(\.$appleUserIdentifier == token.subject.value)
+      .first()
+    
+    if let user = user {
+      user.patch(body: userBody)
+      try await user.update(on: req.db)
+      return user
+    } else {
+      let user = User(body: userBody)
+      try await user.create(on: req.db)
+      return user
+    }
+  }
+  
   public static func configure(_ app: Application) throws {
       // uncomment to serve files from /Public folder
       // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
     app.jwt.apple.applicationIdentifier = "com.BrightDigit.Jojo.SignInWithApple"
       // register routes
-    app.get("apple") { req async throws -> HTTPStatus in
+    app.get("apple") { req async throws -> UserResponse in
       let userBody = try req.content.decode(SIWARequestBody.self)
       
-        let token = try await req.jwt.apple.verify(userBody.appleIdentityToken)
-      let user = try await User.query(on: req.db).filter(\.$appleUserIdentifier == token.subject.value).first()
+        let jwt = try await req.jwt.apple.verify(userBody.appleIdentityToken)
+      let user = try await self.user(req, jwt, userBody)
       
-      if let user = user {
-        user.patch(body: userBody)
-        try await user.update(on: req.db)
-      } else {
-        let user = User(body: userBody)
-        try await user.create(on: req.db)
-      }
-        return .ok
+      let token = try user.createAccessToken(req: req)
+      try await token.save(on: req.db)
+      
+      return try UserResponse(accessToken: token.requireID(), user: user)
     }
     
     app.post("sim") { request async throws -> HTTPStatus in
