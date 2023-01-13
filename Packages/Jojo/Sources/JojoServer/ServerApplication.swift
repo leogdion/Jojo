@@ -14,118 +14,6 @@ import FluentKit
 
 import JojoModels
 
-extension SIWARequestBody : Content {}
-
-
-/// An ephermal authentication token that identifies a registered user.
-final class Token: Model {
-  init() {}
-
-  static var schema: String = "UserToken"
-
-  @ID(key: .id)
-  var id: UUID?
-
-  @Parent(key: "userID")
-  var user: User
-
-  @Timestamp(key: "updatedAt", on: .update)
-  var updatedAt: Date?
-
-  @Timestamp(key: "createdAt", on: .create)
-  var createdAt: Date?
-  
-  /// Creates a new `UserToken`.
-  init(id: UUID? = nil, userID: UUID) {
-    self.id = id
-    $user.id = userID
-  }
-}
-
-extension Token {
-  var lastAccessedAt : Date {
-    get {
-      self.updatedAt ?? .distantPast
-    }
-    set {
-      self.updatedAt = newValue
-    }
-    
-  }
-  
-  var age : TimeInterval {
-    return -self.lastAccessedAt.timeIntervalSinceNow
-  }
-}
-
-
-public final class User: Model {
-  public init () {
-    
-  }
-  
-  enum Key : FieldKey {
-    case email
-    case firstName
-    case lastName
-    case appleUserIdentifier
-  }
-  
-  @ID(key: .id)
-  public var id: UUID?
-  
-  
-  @Field(key: Key.email.rawValue)
-  public var email: String?
-  
-  @Field(key: Key.firstName.rawValue)
-  public var firstName: String?
-  
-  @Field(key: Key.lastName.rawValue)
-  public var lastName: String?
-  
-  @Field(key: Key.appleUserIdentifier.rawValue)
-  public var appleUserIdentifier: String
-  
-  public typealias IDValue = UUID
-  
-  public static let schema: String = "User"
-  
-  public init(appleUserIdentifier : String, email: String? = nil, firstName : String? = nil, lastName : String? = nil, id: UUID? = nil) {
-    self.id = id
-  }
-}
-
-extension User {
-  convenience init(body: SIWARequestBody) {
-    self.init(appleUserIdentifier: body.appleIdentityToken, firstName: body.firstName, lastName: body.lastName)
-  }
-  
-  func patch(body: SIWARequestBody) {
-    self.lastName = body.lastName ?? self.lastName
-    self.firstName = body.firstName ?? self.firstName
-    self.email = body.email ?? self.email
-    self.appleUserIdentifier = body.appleIdentityToken
-  }
-}
-
-public struct UserMigration : AsyncMigration {
-  public func prepare(on database: FluentKit.Database) async throws {
-    try await database.schema(User.schema)
-      .id()
-      .field(User.Key.email.rawValue, .string)
-      .field(User.Key.firstName.rawValue, .string)
-      .field(User.Key.lastName.rawValue, .string)
-      .field(User.Key.appleUserIdentifier.rawValue, .string, .required)
-      .unique(on: User.Key.appleUserIdentifier.rawValue)
-      .create()
-  }
-  public func revert(on database: Database) async throws {
-    try await database.schema(User.schema)
-      .delete()
-  }
-  
-}
 public class ServerApplication {
   var env : Environment
   let app : Application
@@ -156,7 +44,6 @@ public class ServerApplication {
       // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
     app.jwt.apple.applicationIdentifier = "com.BrightDigit.Jojo.SignInWithApple"
-    app.jwt.apple
       // register routes
     app.get("apple") { req async throws -> HTTPStatus in
       let userBody = try req.content.decode(SIWARequestBody.self)
