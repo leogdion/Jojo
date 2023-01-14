@@ -7,49 +7,55 @@
 
 import SwiftUI
 import JojoModels
-class DirectoryObserver : ObservableObject {
-  let directoryURL : URL
-  
-  var dispatchSource : DispatchSourceFileSystemObject?
-  var descriptor : Int32 = -1
-  
-  @Published var fileURLs : [URL]?
-  
-  func onFileWrite() {
-    let urls = try? FileManager.default.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: [.isRegularFileKey, .addedToDirectoryDateKey])
-    Task{ @MainActor in
-      self.fileURLs = urls
+import Combine
+
+class AuthenticationObject : ObservableObject {
+  @Published var fileObserver : FileObserver
+  @Published var userResponse: UserResponse?
+  @Published var lastError : Error?
+  init() {
+    
+    self.fileObserver = FileObserver(fileURL: FileManager.default.temporaryDirectory.appending(component: "jojo.json"))
+    
+    let userResponseResultPublisher = fileObserver.$data.compactMap{$0}.map { data in
+      var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
+      urlRequest.httpMethod = "POST"
+      urlRequest.httpBody = data
+      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
+      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected
+      return urlRequest
+    }.map (
+      URLSession.shared.dataTaskPublisher(for:)
+    ).switchToLatest().map(\.data)
+      .decode(type: UserResponse.self, decoder: JSONDecoder())
+    .map(Result.success).catch{ error in
+      Just(Result.failure(error))
+    }.share()
+    
+    let failurePublisher = userResponseResultPublisher.compactMap{
+      switch $0 {
+      case .failure(let error):
+        return error
+      default:
+        return nil
+      }
     }
-  }
-  init (directoryURL: URL) {
     
-    self.directoryURL = directoryURL
+    let successPublisher = userResponseResultPublisher.compactMap{
+      switch $0 {
+      case .success(let value):
+        return value
+      default:
+        return nil
+      }
+    }
+    
+    successPublisher.map(Optional.some).receive(on: DispatchQueue.main).assign(to: &self.$userResponse)
+    failurePublisher.map(Optional.some).receive(on: DispatchQueue.main).assign(to: &self.$lastError)
+      //.receive(on: DispatchQueue.main)
+      
   }
   
-  func cancelHandler () {
-    close(self.descriptor)
-    self.dispatchSource = nil
-    self.descriptor = -1
-  }
-  
-  func stopMonitoring () {
-    self.dispatchSource?.cancel()
-  }
-  
-  func startMonitoring () {
-    
-    let descriptor = open(self.directoryURL.path,O_EVTONLY)
-    
-    let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .write, queue: .global(qos: .userInteractive))
-    
-    source.setCancelHandler(handler: self.cancelHandler)
-    source.setEventHandler(handler: self.onFileWrite)
-    
-    self.descriptor = descriptor
-    self.dispatchSource = source
-    
-    source.resume()
-  }
 }
 
 extension DirectoryObserver {
@@ -61,6 +67,7 @@ extension DirectoryObserver {
 
 struct ContentView: View {
   @StateObject var directoryObserver = DirectoryObserver()
+  
   // xcrun simctl get_app_container booted com.BrightDigit.SimTest.watchkitapp data
   @State var accessToken: String?
     var body: some View {
