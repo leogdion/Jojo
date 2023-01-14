@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+import JojoModels
 class DirectoryObserver : ObservableObject {
   let directoryURL : URL
   
@@ -62,19 +62,29 @@ extension DirectoryObserver {
 struct ContentView: View {
   @StateObject var directoryObserver = DirectoryObserver()
   // xcrun simctl get_app_container booted com.BrightDigit.SimTest.watchkitapp data
-  @State var text: String = ""
+  @State var accessToken: String?
     var body: some View {
         VStack {
-          TextField("Test", text: $text)
-        Button("Paste") {
-          let url = FileManager.default.temporaryDirectory.appending(component: "token")
           
-          if let text = try? String(contentsOf: url) {
-            Task {@MainActor in
-              self.text = text
-            }
-          }
-          }
+          Button("Sign In With Apple") {
+            debugPrint("LoggingIn")
+//            Task {
+//              var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
+//              urlRequest.httpMethod = "POST"
+//              urlRequest.httpBody = try! JSONEncoder().encode(body)
+//              let userResponse : UserResponse
+//              do {
+//                let (data, _) = try await URLSession.shared.data(for: urlRequest)
+//                userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
+//              } catch {
+//                debugPrint(error)
+//                return
+//              }
+//              Task { @MainActor in
+//                self.accessToken = userResponse.accessToken
+//              }
+//            }
+          }.disabled(self.accessToken == nil)
         }
         .padding()
         .onReceive(self.directoryObserver.$fileURLs) { urls in
@@ -82,13 +92,13 @@ struct ContentView: View {
           guard let urls = urls else {
             return
           }
-          var text : String? = nil
+          var text : Data? = nil
           
           for url in urls {
             
-            let urlText : String
+            let urlText : Data
             do {
-              urlText = try String(contentsOf: url)
+              urlText = try Data(contentsOf: url)
             } catch {
               debugPrint(error)
               continue
@@ -101,8 +111,25 @@ struct ContentView: View {
             return
           }
           
-          Task { @MainActor in
-            self.text = text
+          Task {
+            var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
+            urlRequest.httpMethod = "POST"
+            urlRequest.httpBody = text
+            
+            urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
+            urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected
+            let userResponse : UserResponse
+            do {
+              let (data, _) = try await URLSession.shared.data(for: urlRequest)
+              userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
+            } catch {
+              debugPrint(error)
+              return
+            }
+            Task { @MainActor in
+              self.accessToken = userResponse.accessToken
+              self.directoryObserver.stopMonitoring()
+            }
           }
         }
         .onAppear{

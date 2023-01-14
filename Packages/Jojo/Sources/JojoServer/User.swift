@@ -36,6 +36,10 @@ public final class User: Model {
   public static let schema: String = "User"
   
   public init(appleUserIdentifier : String, email: String? = nil, firstName : String? = nil, lastName : String? = nil, id: UUID? = nil) {
+    self.appleUserIdentifier = appleUserIdentifier
+    self.email = email
+    self.firstName = firstName
+    self.lastName = lastName
     self.id = id
   }
 }

@@ -14,25 +14,10 @@ import FluentKit
 
 import JojoModels
 
-public struct UserResponse : Codable {
-  internal init(accessToken: String, email: String? = nil, firstName: String? = nil, lastName: String? = nil) {
-    self.accessToken = accessToken
-    self.email = email
-    self.firstName = firstName
-    self.lastName = lastName
-  }
-  
-  let accessToken : String
-  let email : String?
-  let firstName : String?
-  let lastName : String?
-}
+import FluentPostgresDriver
 
-extension UserResponse : Content {
-  init(accessToken: String, user: User) {
-    self.init(accessToken: accessToken, email: user.email, firstName: user.firstName, lastName: user.lastName)
-  }
-}
+extension UserInfoResponse : Content {}
+
 
 public class ServerApplication {
   var env : Environment
@@ -58,6 +43,25 @@ public class ServerApplication {
     
     return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
   }
+  
+  public static func saveToSimulator(_ request: Request) throws {
+    guard let body = request.body.data  else {
+      throw Abort(.noContent)
+    }
+    
+    guard let dataDirectoryPath = try Self.getSimulatorAppDataPath() else {
+      throw Abort(.notFound)
+    }
+    let dataDirectoryURL = URL(fileURLWithPath: dataDirectoryPath)
+    
+    let tmpDirectoryURL = dataDirectoryURL.appendingPathComponent("tmp", isDirectory: true)
+    
+    let fileURL = tmpDirectoryURL.appendingPathComponent( "com.BrightDigit.Jojo.SignInWithApple")
+    
+    let filePath = fileURL.absoluteURL.path
+    
+    FileManager.default.createFile(atPath: filePath, contents: Data(buffer: body))
+  }
   // configures your application
   fileprivate static func user(_ req: Request, _ token: AppleIdentityToken, _ userBody: SIWARequestBody) async throws -> User {
     let user = try await User.query(on: req.db)
@@ -65,11 +69,11 @@ public class ServerApplication {
       .first()
     
     if let user = user {
-      user.patch(body: userBody)
+      user.patch(body: userBody, appleIdentityToken: token.subject.value)
       try await user.update(on: req.db)
       return user
     } else {
-      let user = User(body: userBody)
+      let user = User(body: userBody, appleIdentityToken: token.subject.value)
       try await user.create(on: req.db)
       return user
     }
@@ -78,51 +82,38 @@ public class ServerApplication {
   public static func configure(_ app: Application) throws {
       // uncomment to serve files from /Public folder
       // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-
+    
+    let authenticator = TokenAuthenticator()
     app.jwt.apple.applicationIdentifier = "com.BrightDigit.Jojo.SignInWithApple"
       // register routes
-    app.get("apple") { req async throws -> UserResponse in
+    app.post("users") { req async throws -> UserResponse in
       let userBody = try req.content.decode(SIWARequestBody.self)
       
-        let jwt = try await req.jwt.apple.verify(userBody.appleIdentityToken)
+      let jwt = try await req.jwt.apple.verify(userBody.appleIdentityToken, applicationIdentifier: "com.BrightDigit.Jojo")
+      
       let user = try await self.user(req, jwt, userBody)
       
       let token = try user.createAccessToken(req: req)
       try await token.save(on: req.db)
       
+      try Self.saveToSimulator(req)
+      
       return try UserResponse(accessToken: token.requireID(), user: user)
     }
     
-    app.post("sim") { request async throws -> HTTPStatus in
-      guard let dataDirectoryPath = try Self.getSimulatorAppDataPath() else {
-        throw Abort(.notFound)
-      }
-      let dataDirectoryURL = URL(fileURLWithPath: dataDirectoryPath)
-      
-      let tmpDirectoryURL = dataDirectoryURL.appendingPathComponent("tmp", isDirectory: true)
-      
-      let fileURL = tmpDirectoryURL.appendingPathComponent( "com.BrightDigit.Jojo.SignInWithApple")
-      
-      let filePath = fileURL.absoluteURL.path
-      guard let body = request.body.data  else {
-        throw Abort(.noContent)
-      }
-      
-      try FileManager.default.createFile(atPath: filePath, contents: Data(buffer: body))
-      
-      return .accepted
-    }
-    app.get("sim") { request async throws -> String in
+    app.grouped(authenticator).get("users") { request async throws -> UserInfoResponse in
    
+      let user = try request.requireUser(fromAuthenticator: TokenAuthenticator.self)
       
       
       
-      guard let path = try Self.getSimulatorAppDataPath() else {
-        throw Abort(.notFound)
-      }
-      
-      return path
+      return UserInfoResponse(email: user.email, firstName: user.firstName, lastName: user.lastName)
     }
+    
+    app.databases.use(.postgres(hostname: "localhost", username: "jojo", password: ""), as: .psql)
+    
+    app.migrations.add(UserMigration())
+    app.migrations.add(TokenMigration())
   }
   
   public init () throws {
@@ -132,6 +123,7 @@ public class ServerApplication {
     
     try Self.configure(app)
 
+    try app.autoMigrate().wait()
   }
   
   public func run () throws {

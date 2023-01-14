@@ -6,7 +6,7 @@ import Fluent
 final class Token: Model {
   init() {}
 
-  static var schema: String = "UserToken"
+  static var schema: String = "Token"
 
   @ID(custom: .id, generatedBy: .user)
   var id: String?
@@ -22,7 +22,7 @@ final class Token: Model {
   
   /// Creates a new `UserToken`.
   init(token: String? = nil, userID: UUID) {
-    self.id = id
+    self.id = token
     $user.id = userID
   }
 }

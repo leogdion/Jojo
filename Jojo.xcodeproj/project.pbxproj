@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B3291E4A2972049500E9DAAC /* JojoModels in Frameworks */ = {isa = PBXBuildFile; productRef = B3291E492972049500E9DAAC /* JojoModels */; };
 		B3440595296CEBA100A0038D /* JojoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3440594296CEBA100A0038D /* JojoApp.swift */; };
 		B3440597296CEBA100A0038D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3440596296CEBA100A0038D /* ContentView.swift */; };
 		B3440599296CEBA300A0038D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3440598296CEBA300A0038D /* Assets.xcassets */; };
@@ -46,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3291E4A2972049500E9DAAC /* JojoModels in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,6 +164,9 @@
 			dependencies = (
 			);
 			name = "JojoWatch Watch App";
+			packageProductDependencies = (
+				B3291E492972049500E9DAAC /* JojoModels */,
+			);
 			productName = "JojoWatch Watch App";
 			productReference = B38B742B296E406500395DBA /* JojoWatch Watch App.app */;
 			productType = "com.apple.product-type.application";
@@ -513,6 +518,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B3291E492972049500E9DAAC /* JojoModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = JojoModels;
+		};
 		B3B2DC6B296F3B2E003F0CF8 /* JojoModels */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = JojoModels;

@@ -10,7 +10,12 @@ import AuthenticationServices
 import JojoModels
 
 struct ContentView: View {
+  
+  @State var accessToken : String?
     var body: some View {
+      if let accessToken {
+        Text(accessToken)
+      } else {
         VStack {
           SignInWithAppleButton { request in
             request.requestedScopes = [.email, .fullName]
@@ -36,23 +41,29 @@ struct ContentView: View {
             
             let body = SIWARequestBody(email: credential.email, firstName: credential.fullName?.givenName, lastName: credential.fullName?.familyName, appleIdentityToken: appleIdentityToken)
             Task {
-              var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/sim")!)
+              var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
               urlRequest.httpMethod = "POST"
+              urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
+              urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected response is also JSON
+
               urlRequest.httpBody = try! JSONEncoder().encode(body)
-              let response : URLResponse
+              let userResponse : UserResponse
               do {
-                (_, response) = try await URLSession.shared.data(for: urlRequest)
+                let (data, _) = try await URLSession.shared.data(for: urlRequest)
+                userResponse = try JSONDecoder().decode(UserResponse.self, from: data)
               } catch {
                 debugPrint(error)
                 return
               }
-              
-              dump(response)
+              Task { @MainActor in
+                self.accessToken = userResponse.accessToken
+              }
             }
           }
-
+          
         }
         .padding()
+      }
     }
 }
 
