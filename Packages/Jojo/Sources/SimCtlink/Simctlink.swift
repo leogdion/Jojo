@@ -9,6 +9,9 @@ import Foundation
 
 
 extension Process  {
+  struct TimeoutError : Error {
+    let timeout : DispatchTime
+  }
   struct UncaughtSignalError : Error {
     private init(reason: Process.TerminationReason, status: Int, data: Data?, output: Data?) {
       self.reason = reason
@@ -17,7 +20,11 @@ extension Process  {
       self.output = output
     }
     
-    internal init(reason: Process.TerminationReason, status: Int32, standardError : Pipe, standardOuput: Pipe) {
+    internal init?(reason: Process.TerminationReason, status: Int32, standardError : Pipe, standardOuput: Pipe) {
+      if reason == .exit, status == 0 {
+
+                return nil
+              }
       let reason = reason
       let status = status
       let data = try? standardError.fileHandleForReading.readToEnd()
@@ -30,45 +37,89 @@ extension Process  {
     let data : Data?
     let output : Data?
   }
-  func run ()  async throws -> Data? {
-    let standardError = Pipe()
-    let standardOutput = Pipe()
-    
-    self.standardError = standardError
-    self.standardOutput = standardOutput
   
-    Task {
-      try self.run()
-    }
+  @MainActor
+  func runAsync (timeout: DispatchTime = .distantFuture)  async throws -> Data? {
+        let standardError = Pipe()
+        let standardOutput = Pipe()
     
-    return try await withCheckedThrowingContinuation { contination in
-      self.terminationHandler = { process in
-        guard process.terminationReason == .exit, process.terminationStatus == 0 else {
-          let error = UncaughtSignalError(
-            reason: process.terminationReason,
-            status: process.terminationStatus,
-            standardError: standardError,
-            standardOuput: standardOutput
-          )
-          contination.resume(with: .failure(error))
-          return
+        self.standardError = standardError
+        self.standardOutput = standardOutput
+
+    let semaphore = DispatchSemaphore(value: 0)
+
+    self.terminationHandler = { _ in
+      semaphore.signal()
+    }
+    try self.run()
+    return try await withCheckedThrowingContinuation { continuation in
+      
+      let result : Result<Data?, Error>
+      let semaphoreResult = semaphore.wait(timeout: timeout)
+      
+      switch semaphoreResult {
+      case .success:
+        if let error = UncaughtSignalError(reason: terminationReason, status: terminationStatus, standardError: standardError, standardOuput: standardOutput) {
+          result = .failure(error)
+        } else {
+          result = Result{
+            try standardOutput.fileHandleForReading.readToEnd()
+          }
         }
-        let data : Data?
-        do {
-          data = try standardOutput.fileHandleForReading.readToEnd()
-        } catch {
-          contination.resume(with: .failure(error))
-          return
-        }
-        contination.resume(with: .success(data))
+      case .timedOut:
+        result = .failure(TimeoutError(timeout: timeout))
       }
-      do {
-        try self.run()
-      } catch {
-        contination.resume(with: .failure(error))
-      }
+      continuation.resume(with: result)
+//      guard semaphoreResult == .success else {
+//        process.terminationHandler = nil
+//        continuation.resume(returning: process)
+//        return
+//      }
+//      let errorCode: Int?
+//
+//      do {
+//        errorCode = try pipe.fileHandleForReading.parseNgrokErrorCode()
+//      } catch {
+//        continuation.resume(with: .failure(error))
+//        return
+//      }
+//      continuation.resume(with: .failure(RunError.earlyTermination(process.terminationReason, errorCode)))
     }
   }
+
+//
+//    Task {
+//      try self.run()
+//    }
+//
+//    return try await withCheckedThrowingContinuation { contination in
+//      self.terminationHandler = { process in
+//        guard process.terminationReason == .exit, process.terminationStatus == 0 else {
+//          let error = UncaughtSignalError(
+//            reason: process.terminationReason,
+//            status: process.terminationStatus,
+//            standardError: standardError,
+//            standardOuput: standardOutput
+//          )
+//          contination.resume(with: .failure(error))
+//          return
+//        }
+//        let data : Data?
+//        do {
+//          data = try standardOutput.fileHandleForReading.readToEnd()
+//        } catch {
+//          contination.resume(with: .failure(error))
+//          return
+//        }
+//        contination.resume(with: .success(data))
+//      }
+//      do {
+//        try self.run()
+//      } catch {
+//        contination.resume(with: .failure(error))
+//      }
+//    }
+//  }
 }
 
 public protocol Subcommand {
@@ -498,7 +549,7 @@ public struct Simctlink {
     process.executableURL = xcRunFileURL
     process.arguments = ["simctl"] + subcommand.arguments
     print(process.arguments)
-    let data = try await process.runAsync()
+    let data = try await process.runAsync(timeout: .now() + 5.0)
     return try subcommand.parse(data)
   }
   
