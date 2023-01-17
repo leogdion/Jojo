@@ -18,6 +18,7 @@ let package = Package(
           name: "JojoServer",
           targets: ["JojoServer"]
         ),
+        .library(name: "Simctlink", targets: ["Simctlink"]),
         .executable(
           name: "jojod",
           targets: ["jojod"]
@@ -46,6 +47,7 @@ let package = Package(
             "JojoModels"
           ]
         ),
+        .target(name: "Simctlink"),
         .executableTarget(name: "jojod", dependencies: ["JojoServer"])
     ]
 )
