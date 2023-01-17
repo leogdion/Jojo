@@ -8,7 +8,7 @@
 import Foundation
 
 
-extension Process : Sendable {
+extension Process  {
   struct UncaughtSignalError : Error {
     private init(reason: Process.TerminationReason, status: Int, data: Data?, output: Data?) {
       self.reason = reason
@@ -37,13 +37,16 @@ extension Process : Sendable {
     self.standardError = standardError
     self.standardOutput = standardOutput
   
+    Task {
+      try self.run()
+    }
     
     return try await withCheckedThrowingContinuation { contination in
-      self.terminationHandler = { _ in
-        guard self.terminationReason == .exit, self.terminationStatus == 0 else {
+      self.terminationHandler = { process in
+        guard process.terminationReason == .exit, process.terminationStatus == 0 else {
           let error = UncaughtSignalError(
-            reason: self.terminationReason,
-            status: self.terminationStatus,
+            reason: process.terminationReason,
+            status: process.terminationStatus,
             standardError: standardError,
             standardOuput: standardOutput
           )
@@ -418,16 +421,34 @@ public struct SimulatorList : Decodable {
   let pairs : [UUID : DevicePair]
 }
 public struct List : Subcommand {
+  public init() {
+  }
+  
   public var arguments: [String] {
     return ["list", "-j"]
   }
   
+  enum Error : Swift.Error {
+    case missingData
+    case deocdingError(DecodingError)
+  }
+  
   public func parse(_ data: Data?) throws -> SimulatorList {
-    fatalError()
+    guard let data = data else {
+      throw Error.missingData
+    }
+    
+    do {
+      return try decoder.decode(SimulatorList.self, from: data)
+    } catch let error as DecodingError {
+      throw Error.deocdingError(error)
+    } catch {
+      throw error
+    }
   }
   
   public typealias OutputType = SimulatorList
-  
+  let decoder : JSONDecoder = JSONDecoder()
   
 }
 public struct GetAppContainer : Subcommand {
@@ -467,13 +488,17 @@ public struct GetAppContainer : Subcommand {
 }
 
 public struct Simctlink {
+  public init() {
+  }
+  
   let xcRunFileURL : URL = URL(fileURLWithPath: "/usr/bin/xcrun")
   
-  func run<SubcommandType: Subcommand>(_ subcommand: SubcommandType) async throws -> SubcommandType.OutputType {
+  public func run<SubcommandType: Subcommand>(_ subcommand: SubcommandType) async throws -> SubcommandType.OutputType {
     let process = Process()
     process.executableURL = xcRunFileURL
     process.arguments = ["simctl"] + subcommand.arguments
-    let data = try await process.run()
+    print(process.arguments)
+    let data = try await process.runAsync()
     return try subcommand.parse(data)
   }
   

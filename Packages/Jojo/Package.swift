@@ -19,6 +19,7 @@ let package = Package(
           targets: ["JojoServer"]
         ),
         .library(name: "Simctlink", targets: ["Simctlink"]),
+        .executable(name: "simulators", targets: ["simulators"]),
         .executable(
           name: "jojod",
           targets: ["jojod"]
@@ -48,6 +49,7 @@ let package = Package(
           ]
         ),
         .target(name: "Simctlink"),
-        .executableTarget(name: "jojod", dependencies: ["JojoServer"])
+        .executableTarget(name: "jojod", dependencies: ["JojoServer"]),
+        .executableTarget(name: "simulators", dependencies: ["Simctlink"])
     ]
 )
