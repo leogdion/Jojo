@@ -23,24 +23,4 @@ public struct Simctlink {
     return try subcommand.parse(data)
   }
   
-//  func run () throws -> String? {
-//    let process = Process()
-//    let pipe = Pipe()
-//    process.executableURL = xcRunFileURL
-//    process.arguments = [
-//      "simctl",
-//      "get_app_container",
-//      "booted",
-//      "com.BrightDigit.Jojo.watchkitapp",
-//      "data"
-//    ]
-//    process.standardOutput = pipe
-//    try process.run()
-//    process.waitUntilExit()
-//    guard let data = try pipe.fileHandleForReading.readToEnd() else {
-//      return nil
-//    }
-//    
-//    return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-//  }
 }
