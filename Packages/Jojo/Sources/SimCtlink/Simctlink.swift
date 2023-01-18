@@ -20,7 +20,7 @@ extension Process  {
       self.output = output
     }
     
-    internal init?(reason: Process.TerminationReason, status: Int32, standardError : Pipe, standardOuput: Pipe) {
+    internal init?(reason: Process.TerminationReason, status: Int32, standardError : Pipe, output: Data?) {
       if reason == .exit, status == 0 {
 
                 return nil
@@ -28,7 +28,7 @@ extension Process  {
       let reason = reason
       let status = status
       let data = try? standardError.fileHandleForReading.readToEnd()
-      let output = try? standardOuput.fileHandleForReading.readToEnd()
+      
       self.init(reason: reason, status: Int(status), data: data, output: output)
     }
     
@@ -38,7 +38,7 @@ extension Process  {
     let output : Data?
   }
   
-  func runAsync (timeout: DispatchTime = .distantFuture)  async throws -> Data? {
+  func run (timeout: DispatchTime)  async throws -> Data? {
         let standardError = Pipe()
         let standardOutput = Pipe()
     
@@ -54,14 +54,13 @@ extension Process  {
     return try await withCheckedThrowingContinuation { continuation in
       
       let result : Result<Data?, Error>
-     // let errorData = Result{try standardError.fileHandleForReading.readToEnd()}
       let outputData = Result{try standardOutput.fileHandleForReading.readToEnd()}
       let semaphoreResult = semaphore.wait(timeout: timeout)
       
       
       switch semaphoreResult {
       case .success:
-        if let error = UncaughtSignalError(reason: terminationReason, status: terminationStatus, standardError: standardError, standardOuput: standardOutput) {
+        if let error = UncaughtSignalError(reason: terminationReason, status: terminationStatus, standardError: standardError, output: try? outputData.get()) {
           result = .failure(error)
         } else {
           result = outputData
@@ -70,56 +69,9 @@ extension Process  {
         result = .failure(TimeoutError(timeout: timeout))
       }
       continuation.resume(with: result)
-//      guard semaphoreResult == .success else {
-//        process.terminationHandler = nil
-//        continuation.resume(returning: process)
-//        return
-//      }
-//      let errorCode: Int?
-//
-//      do {
-//        errorCode = try pipe.fileHandleForReading.parseNgrokErrorCode()
-//      } catch {
-//        continuation.resume(with: .failure(error))
-//        return
-//      }
-//      continuation.resume(with: .failure(RunError.earlyTermination(process.terminationReason, errorCode)))
     }
   }
 
-//
-//    Task {
-//      try self.run()
-//    }
-//
-//    return try await withCheckedThrowingContinuation { contination in
-//      self.terminationHandler = { process in
-//        guard process.terminationReason == .exit, process.terminationStatus == 0 else {
-//          let error = UncaughtSignalError(
-//            reason: process.terminationReason,
-//            status: process.terminationStatus,
-//            standardError: standardError,
-//            standardOuput: standardOutput
-//          )
-//          contination.resume(with: .failure(error))
-//          return
-//        }
-//        let data : Data?
-//        do {
-//          data = try standardOutput.fileHandleForReading.readToEnd()
-//        } catch {
-//          contination.resume(with: .failure(error))
-//          return
-//        }
-//        contination.resume(with: .success(data))
-//      }
-//      do {
-//        try self.run()
-//      } catch {
-//        contination.resume(with: .failure(error))
-//      }
-//    }
-//  }
 }
 
 public protocol Subcommand {
@@ -450,26 +402,20 @@ public struct Device : Decodable {
 //      ],
 }
 
+
 public struct DevicePair : Decodable {
-//  "F15E1A4E-51A0-4D9F-B683-673AB9388E3C" : {
-//    "watch" : {
-//      "name" : "Apple Watch Ultra (49mm)",
-//      "udid" : "EA31C36A-B48B-48BD-B24B-C2B4C5734661",
-//      "state" : "Shutdown"
-//    },
-//    "phone" : {
-//      "name" : "iPhone 14 Pro Max",
-//      "udid" : "23CA2740-5E81-437D-BD21-B0B75A1A758A",
-//      "state" : "Shutdown"
-//    },
-//    "state" : "(active, disconnected)"
-//  },
+  public struct Device : Decodable {
+    
+  }
+  let watch : Device
+  let phone : Device
+  let state : String
 }
 public struct SimulatorList : Decodable {
   let devicetypes : [DeviceType]
   let runtimes: [Runtime]
   let devices : [String : Device]
-  let pairs : [UUID : DevicePair]
+  let pairs : [String : DevicePair]
 }
 public struct List : Subcommand {
   public init() {
@@ -548,30 +494,29 @@ public struct Simctlink {
     let process = Process()
     process.executableURL = xcRunFileURL
     process.arguments = ["simctl"] + subcommand.arguments
-    print(process.arguments)
-    let data = try await process.runAsync()
-    print(String(data: data!, encoding: .utf8))
+    
+    let data = try await process.run(timeout: .distantFuture)
     return try subcommand.parse(data)
   }
   
-  func run () throws -> String? {
-    let process = Process()
-    let pipe = Pipe()
-    process.executableURL = xcRunFileURL
-    process.arguments = [
-      "simctl",
-      "get_app_container",
-      "booted",
-      "com.BrightDigit.Jojo.watchkitapp",
-      "data"
-    ]
-    process.standardOutput = pipe
-    try process.run()
-    process.waitUntilExit()
-    guard let data = try pipe.fileHandleForReading.readToEnd() else {
-      return nil
-    }
-    
-    return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-  }
+//  func run () throws -> String? {
+//    let process = Process()
+//    let pipe = Pipe()
+//    process.executableURL = xcRunFileURL
+//    process.arguments = [
+//      "simctl",
+//      "get_app_container",
+//      "booted",
+//      "com.BrightDigit.Jojo.watchkitapp",
+//      "data"
+//    ]
+//    process.standardOutput = pipe
+//    try process.run()
+//    process.waitUntilExit()
+//    guard let data = try pipe.fileHandleForReading.readToEnd() else {
+//      return nil
+//    }
+//    
+//    return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+//  }
 }
