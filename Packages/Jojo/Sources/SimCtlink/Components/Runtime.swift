@@ -1,6 +1,22 @@
 
 
 public struct Runtime : Decodable {
+  struct SupportedDeviceType : Decodable {
+    let bundlePath : String // URL?
+    let name : String
+    let identifier : String // identifier
+    let productFamily : String // deviceType
+  }
+  let supportedDeviceTypes : [SupportedDeviceType]
+  let bundlePath : String // URL?
+  let buildversion : String
+  let platform : String // platform
+  let runtimeRoot: String // URL?
+  let version : String // version
+  let isInternal : Bool
+  let isAvailable: Bool
+  let name : String
+  
 //  "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS 14.0.simruntime",
 //        "buildversion" : "18A394",
 //        "platform" : "iOS",

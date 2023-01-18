@@ -28,7 +28,11 @@ public struct List : Subcommand {
   }
   
   public typealias OutputType = SimulatorList
-  let decoder : JSONDecoder = JSONDecoder()
+  let decoder : JSONDecoder = {
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = JSONDecoder.DateDecodingStrategy.iso8601
+    return decoder
+  }()
   
 }
 

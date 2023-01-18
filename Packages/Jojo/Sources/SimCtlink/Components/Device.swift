@@ -1,5 +1,16 @@
+import Foundation
 
 public struct Device : Decodable {
+  let dataPath : String // URL?
+  let dataPathSize : Int
+  let logPath: String // URL?
+  let udid: UUID
+  let isAvailable: Bool
+  let logPathSize: Int?
+  let lastBootedAt: Date?
+  let deviceTypeIdentifier: String // Identifier (Device)
+  let state : String // DeviceState
+  let name : String
 //  "com.apple.CoreSimulator.SimRuntime.iOS-16-0" : [
 //        {
 //          "lastBootedAt" : "2022-08-18T18:41:03Z",
