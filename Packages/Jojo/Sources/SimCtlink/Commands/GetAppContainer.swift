@@ -7,11 +7,21 @@ public struct GetAppContainer : Subcommand {
     case invalidData(Data)
     case invalidPath(String)
   }
-  let appBundleContainer : String
-  let container: ContainerID
-  let simulator : SimulatorID
+  public let appBundleContainer : String
+  public let container: ContainerID
+  public let simulator : SimulatorID
   
-  public typealias OutputType = URL
+  public init (
+    appBundleContainer : String,
+    container: ContainerID,
+    simulator : SimulatorID
+  ) {
+    self.appBundleContainer = appBundleContainer
+    self.container = container
+    self.simulator = simulator
+  }
+  
+  public typealias OutputType = Path
   
   public var arguments: [String] {
     return [
@@ -22,7 +32,7 @@ public struct GetAppContainer : Subcommand {
     ]
   }
   
-  public func parse(_ data: Data?) throws -> URL {
+  public func parse(_ data: Data?) throws -> Path {
     guard let data = data else {
       throw Error.missingData
     }
@@ -31,7 +41,7 @@ public struct GetAppContainer : Subcommand {
       throw Error.invalidData(data)
     }
     
-    return URL(fileURLWithPath: text)
+    return text.trimmingCharacters(in: .whitespacesAndNewlines)
     
   }
 }

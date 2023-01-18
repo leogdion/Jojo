@@ -11,11 +11,11 @@ public struct DevicePair : Decodable {
   public struct Device : Decodable {
     let name : String
     let udid : UUID
-    let state : String // Device.State
+    let state : DeviceState // Device.State
   }
   let watch : Device
   let phone : Device
-  let state : String  // Pair.State
+  let state : PairState  // Pair.State
 }
 
 
