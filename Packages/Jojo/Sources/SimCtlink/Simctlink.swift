@@ -38,7 +38,6 @@ extension Process  {
     let output : Data?
   }
   
-  @MainActor
   func runAsync (timeout: DispatchTime = .distantFuture)  async throws -> Data? {
         let standardError = Pipe()
         let standardOutput = Pipe()
@@ -55,16 +54,17 @@ extension Process  {
     return try await withCheckedThrowingContinuation { continuation in
       
       let result : Result<Data?, Error>
+     // let errorData = Result{try standardError.fileHandleForReading.readToEnd()}
+      let outputData = Result{try standardOutput.fileHandleForReading.readToEnd()}
       let semaphoreResult = semaphore.wait(timeout: timeout)
+      
       
       switch semaphoreResult {
       case .success:
         if let error = UncaughtSignalError(reason: terminationReason, status: terminationStatus, standardError: standardError, standardOuput: standardOutput) {
           result = .failure(error)
         } else {
-          result = Result{
-            try standardOutput.fileHandleForReading.readToEnd()
-          }
+          result = outputData
         }
       case .timedOut:
         result = .failure(TimeoutError(timeout: timeout))
@@ -549,7 +549,8 @@ public struct Simctlink {
     process.executableURL = xcRunFileURL
     process.arguments = ["simctl"] + subcommand.arguments
     print(process.arguments)
-    let data = try await process.runAsync(timeout: .now() + 5.0)
+    let data = try await process.runAsync()
+    print(String(data: data!, encoding: .utf8))
     return try subcommand.parse(data)
   }
   
