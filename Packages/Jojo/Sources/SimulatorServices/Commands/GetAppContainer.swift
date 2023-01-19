@@ -2,7 +2,7 @@ import Foundation
 
 public struct GetAppContainer : Subcommand {
   
-  enum Error : Swift.Error {
+  public enum Error : Swift.Error {
     case missingData
     case invalidData(Data)
     case invalidPath(String)
@@ -42,7 +42,22 @@ public struct GetAppContainer : Subcommand {
     }
     
     return text.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+  
+  public func recover(_ error: Process.UncaughtSignalError) throws {
+    guard let text = error.data.flatMap({String(data: $0, encoding: .utf8)}) else {
+      throw error
+    }
     
+    let lines = text.components(separatedBy: .newlines).map{$0.trimmingCharacters(in: .whitespacesAndNewlines)}.filter{!$0.isEmpty}
+    
+    guard let errorString = lines.last?.trimmingCharacters(in: .whitespacesAndNewlines) else {
+      throw error
+    }
+    print(errorString)
+    guard errorString == "No such file or directory" else {
+      throw error
+    }
   }
 }
 

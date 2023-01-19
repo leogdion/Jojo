@@ -8,11 +8,11 @@
 import Foundation
 
 
-extension Process  {
-  struct TimeoutError : Error {
-    let timeout : DispatchTime
+public extension Process  {
+  public struct TimeoutError : Error {
+    public let timeout : DispatchTime
   }
-  struct UncaughtSignalError : Error {
+  public struct UncaughtSignalError : Error {
     private init(reason: Process.TerminationReason, status: Int, data: Data?, output: Data?) {
       self.reason = reason
       self.status = status
@@ -32,10 +32,10 @@ extension Process  {
       self.init(reason: reason, status: Int(status), data: data, output: output)
     }
     
-    let reason : TerminationReason
-    let status : Int
-    let data : Data?
-    let output : Data?
+    public let reason : TerminationReason
+    public let status : Int
+    public let data : Data?
+    public let output : Data?
   }
   
   func run (timeout: DispatchTime)  async throws -> Data? {

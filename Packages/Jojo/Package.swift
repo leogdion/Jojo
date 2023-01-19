@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "Jojo",
     platforms: [
-      .macOS(.v12)
+      .macOS(.v12), .iOS(.v13)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -18,7 +18,7 @@ let package = Package(
           name: "JojoServer",
           targets: ["JojoServer"]
         ),
-        .library(name: "Simctlink", targets: ["Simctlink"]),
+        .library(name: "SimulatorServices", targets: ["SimulatorServices"]),
         .executable(name: "simulators", targets: ["simulators"]),
         .executable(
           name: "jojod",
@@ -48,8 +48,8 @@ let package = Package(
             "JojoModels"
           ]
         ),
-        .target(name: "Simctlink"),
+        .target(name: "SimulatorServices"),
         .executableTarget(name: "jojod", dependencies: ["JojoServer"]),
-        .executableTarget(name: "simulators", dependencies: ["Simctlink"])
+        .executableTarget(name: "simulators", dependencies: ["SimulatorServices"])
     ]
 )

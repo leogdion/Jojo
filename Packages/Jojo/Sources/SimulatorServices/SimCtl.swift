@@ -8,7 +8,7 @@
 import Foundation
 
 
-public struct Simctlink {
+public struct SimCtl {
   public init() {
   }
   
@@ -18,8 +18,14 @@ public struct Simctlink {
     let process = Process()
     process.executableURL = xcRunFileURL
     process.arguments = ["simctl"] + subcommand.arguments
-    
-    let data = try await process.run(timeout: .distantFuture)
+    print(process.arguments)
+    let data : Data?
+    do {
+      data = try await process.run(timeout: .distantFuture)
+    } catch let error as Process.UncaughtSignalError {
+      try subcommand.recover(error)
+      data = nil
+    }
     return try subcommand.parse(data)
   }
   
