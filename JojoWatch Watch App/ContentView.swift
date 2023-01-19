@@ -9,33 +9,43 @@ import SwiftUI
 import JojoModels
 import Combine
 
-class AuthenticationObject : ObservableObject {
-  let directoryObserver : DirectoryObserver
-  @Published var userResponse: UserResponse?
+class AuthenticationObject<OutputType : Decodable> : ObservableObject {
+  @Published var userResponse: OutputType?
   @Published var lastError : Error?
-  init() {
-    self.directoryObserver = DirectoryObserver(directoryPath: FileManager.default.temporaryDirectory.path)
+  
+  let directoryObserver : DirectoryObserver
+  let sourceFileURL : URL
+  let urlSession : URLSession
+  let createRequestFromData : (Data) -> URLRequest
+  
+  init(sourceFileURL : URL, urlSession : URLSession = .shared, _ createRequestFromData: @escaping (Data) -> URLRequest ) {
+    self.sourceFileURL = sourceFileURL
+    self.urlSession = urlSession
+    self.createRequestFromData = createRequestFromData
+    self.directoryObserver = DirectoryObserver(directoryPath: sourceFileURL.deletingLastPathComponent().path)
     
     
     let dataPublisher = directoryObserver.directoryEventPublisher().compactMap {_ in
-      return try? Data(contentsOf: FileManager.default.temporaryDirectory.appendingPathComponent("com.BrightDigit.Jojo.SignInWithApple"))
+      //return try? Data(contentsOf: FileManager.default.temporaryDirectory.appendingPathComponent("com.BrightDigit.Jojo.SignInWithApple"))
+      return try? Data(contentsOf: self.sourceFileURL)
     }
     
     let dataResponsePublisher = dataPublisher.compactMap{$0}.map { data -> URLRequest in
-      var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
-      urlRequest.httpMethod = "POST"
-      urlRequest.httpBody = data
-      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
-      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected
-      return urlRequest
+      return self.createRequestFromData(data)
+//      var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
+//      urlRequest.httpMethod = "POST"
+//      urlRequest.httpBody = data
+//      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
+//      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected
+//      return urlRequest
     }.map { urlRequest in
-      return URLSession.shared.dataTaskPublisher(for: urlRequest)
+      return self.urlSession.dataTaskPublisher(for: urlRequest)
     }.switchToLatest()
     
 //
     let userResponseResultPublisher = dataResponsePublisher
       .map(\.data)
-      .decode(type: UserResponse.self, decoder: JSONDecoder())
+      .decode(type: OutputType.self, decoder: JSONDecoder())
     .map(Result.success).catch{ error in
       Just(Result.failure(error))
     }.share()
@@ -67,10 +77,22 @@ class AuthenticationObject : ObservableObject {
 struct ContentView: View {
   //@StateObject var directoryObserver = DirectoryObserver()
   @State var error : Error?
-  @StateObject var authenticationObject = AuthenticationObject()
+  @StateObject var authenticationObject = AuthenticationObject<UserResponse>(
+    sourceFileURL: FileManager.default.temporaryDirectory.appendingPathComponent("com.BrightDigit.Jojo.SignInWithApple"),
+    Self.createRequestFromData
+  )
   
   var isReady : Bool {
     self.authenticationObject.userResponse?.accessToken != nil
+  }
+  
+  static func createRequestFromData(_ data: Data) -> URLRequest {
+          var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
+          urlRequest.httpMethod = "POST"
+          urlRequest.httpBody = data
+          urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
+          urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected
+          return urlRequest
   }
   
   // xcrun simctl get_app_container booted com.BrightDigit.SimTest.watchkitapp data
