@@ -23,7 +23,7 @@ struct Simulators {
         for device in devices {
           taskGroup.addTask {
             do {
-              return try await sim.run(GetAppContainer(appBundleContainer: appBundleContainer, container: .app, simulator: .id(device.udid)))
+              return try await sim.run(GetAppContainer(appBundleIdentifier: appBundleContainer, container: .app, simulator: .id(device.udid)))
             } catch GetAppContainer.Error.missingData {
               return nil
             }

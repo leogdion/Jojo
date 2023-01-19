@@ -6,40 +6,41 @@
 //
 
 import Foundation
-class DirectoryObserver : ObservableObject {
-  let directoryURL : URL
+import Combine
+import System
+class DirectoryObserver {
+  public let directoryPath : FilePath
   
-  var dispatchSource : DispatchSourceFileSystemObject?
-  var descriptor : Int32 = -1
+  private var dispatchSource : DispatchSourceFileSystemObject?
+  private var descriptor : FileDescriptor?
   
-  @Published var fileURLs : [URL]?
+  let fileWriteSubject = PassthroughSubject<Void, Never>()
   
   func onFileWrite() {
-    let urls = try? FileManager.default.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: [.isRegularFileKey, .addedToDirectoryDateKey])
-    Task{ @MainActor in
-      self.fileURLs = urls
-    }
+    fileWriteSubject.send()
   }
-  init (directoryURL: URL) {
-    
-    self.directoryURL = directoryURL
+  
+  init (directoryPath: String) {
+    print(directoryPath)
+    self.directoryPath = FilePath(directoryPath)
   }
   
   func cancelHandler () {
-    close(self.descriptor)
+    try? self.descriptor?.close()
     self.dispatchSource = nil
-    self.descriptor = -1
+    self.descriptor = nil
   }
   
   func stopMonitoring () {
     self.dispatchSource?.cancel()
   }
   
-  func startMonitoring () {
+  func startMonitoring (triggerImmediately: Bool) throws {
     
-    let descriptor = open(self.directoryURL.path,O_EVTONLY)
+    let descriptor = try FileDescriptor.open(self.directoryPath, .init(rawValue: O_EVTONLY))
     
-    let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .write, queue: .global(qos: .userInteractive))
+    
+    let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor.rawValue, eventMask: .write, queue: .global(qos: .userInteractive))
     
     source.setCancelHandler(handler: self.cancelHandler)
     source.setEventHandler(handler: self.onFileWrite)
@@ -48,5 +49,13 @@ class DirectoryObserver : ObservableObject {
     self.dispatchSource = source
     
     source.resume()
+    
+    if (triggerImmediately) {
+      self.onFileWrite()
+    }
+  }
+  
+  func directoryEventPublisher() -> AnyPublisher<Void, Never> {
+    self.fileWriteSubject.eraseToAnyPublisher()
   }
 }

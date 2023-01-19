@@ -39,6 +39,7 @@ extension SimCtl {
       
       return try await taskGroup.reduce(into: [Path]()) { paths, path in
         if let path {
+          print(path)
           paths.append(path)
         }
       }
@@ -164,6 +165,15 @@ public class ServerApplication {
       
       
       return UserInfoResponse(email: user.email, firstName: user.firstName, lastName: user.lastName)
+    }
+    
+    Task {
+      do {
+        let paths = try await Self.simctl.fetchContainerPaths(appBundleIdentifier: "com.BrightDigit.Jojo.watchkitapp", type: .data)
+        dump(paths)
+      } catch {
+        print(error)
+      }
     }
     
     app.databases.use(.postgres(hostname: "localhost", username: "jojo", password: ""), as: .psql)

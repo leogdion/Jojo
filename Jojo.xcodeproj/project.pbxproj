@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		B3291E4A2972049500E9DAAC /* JojoModels in Frameworks */ = {isa = PBXBuildFile; productRef = B3291E492972049500E9DAAC /* JojoModels */; };
 		B3291E4C29723FC200E9DAAC /* DirectoryObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3291E4B29723FC200E9DAAC /* DirectoryObserver.swift */; };
-		B3291E5029723FFA00E9DAAC /* FileObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3291E4F29723FFA00E9DAAC /* FileObserver.swift */; };
 		B3440595296CEBA100A0038D /* JojoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3440594296CEBA100A0038D /* JojoApp.swift */; };
 		B3440597296CEBA100A0038D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3440596296CEBA100A0038D /* ContentView.swift */; };
 		B3440599296CEBA300A0038D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3440598296CEBA300A0038D /* Assets.xcassets */; };
@@ -23,7 +22,6 @@
 
 /* Begin PBXFileReference section */
 		B3291E4B29723FC200E9DAAC /* DirectoryObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryObserver.swift; sourceTree = "<group>"; };
-		B3291E4F29723FFA00E9DAAC /* FileObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileObserver.swift; sourceTree = "<group>"; };
 		B3440591296CEBA100A0038D /* Jojo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jojo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3440594296CEBA100A0038D /* JojoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JojoApp.swift; sourceTree = "<group>"; };
 		B3440596296CEBA100A0038D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -102,7 +100,6 @@
 			isa = PBXGroup;
 			children = (
 				B38B742D296E406500395DBA /* JojoWatchApp.swift */,
-				B3291E4F29723FFA00E9DAAC /* FileObserver.swift */,
 				B38B742F296E406500395DBA /* ContentView.swift */,
 				B38B7431296E406600395DBA /* Assets.xcassets */,
 				B38B7433296E406600395DBA /* Preview Content */,
@@ -252,7 +249,6 @@
 				B38B7430296E406500395DBA /* ContentView.swift in Sources */,
 				B38B742E296E406500395DBA /* JojoWatchApp.swift in Sources */,
 				B3291E4C29723FC200E9DAAC /* DirectoryObserver.swift in Sources */,
-				B3291E5029723FFA00E9DAAC /* FileObserver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
