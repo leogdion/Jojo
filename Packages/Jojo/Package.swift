@@ -45,7 +45,8 @@ let package = Package(
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "JWT", package: "jwt"),
 
-            "JojoModels"
+            "JojoModels",
+                "SimulatorServices"
           ]
         ),
         .target(name: "SimulatorServices"),

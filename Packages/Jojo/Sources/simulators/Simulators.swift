@@ -12,8 +12,9 @@ struct Simulators {
   static func main() async throws {
     
     let sim = SimCtl()
+    let appBundleContainer = "com.BrightDigit.Jojo.watchkitapp"
     let paths : [Path]
-    do {
+    
       paths = try await withThrowingTaskGroup(of: Path?.self) { taskGroup in
         let list = try await sim.run(List())
         let devices = list.devices.values
@@ -22,7 +23,7 @@ struct Simulators {
         for device in devices {
           taskGroup.addTask {
             do {
-              return try await sim.run(GetAppContainer(appBundleContainer: "com.BrightDigit.Jojo.watchkitapp", container: .app, simulator: .id(device.udid)))
+              return try await sim.run(GetAppContainer(appBundleContainer: appBundleContainer, container: .app, simulator: .id(device.udid)))
             } catch GetAppContainer.Error.missingData {
               return nil
             }
@@ -33,14 +34,7 @@ struct Simulators {
           paths.append(path)
         }.compactMap{$0}
       }
-    } catch let error as Process.UncaughtSignalError {
-      //let outputString = error.output.flatMap{String(data: $0, encoding: .utf8)}
-      if let errorString = error.data.flatMap{String(data: $0, encoding: .utf8)} {
-        //print(outputString)
-        print(errorString)
-      }
-      return
-    }
+    
     
     print(paths)
     

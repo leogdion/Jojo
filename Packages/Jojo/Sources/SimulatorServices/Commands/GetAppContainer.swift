@@ -7,16 +7,16 @@ public struct GetAppContainer : Subcommand {
     case invalidData(Data)
     case invalidPath(String)
   }
-  public let appBundleContainer : String
+  public let appBundleIdentifier : String
   public let container: ContainerID
   public let simulator : SimulatorID
   
   public init (
-    appBundleContainer : String,
+    appBundleIdentifier : String,
     container: ContainerID,
     simulator : SimulatorID
   ) {
-    self.appBundleContainer = appBundleContainer
+    self.appBundleIdentifier = appBundleIdentifier
     self.container = container
     self.simulator = simulator
   }
@@ -27,7 +27,7 @@ public struct GetAppContainer : Subcommand {
     return [
       "get_app_container",
       simulator.description,
-      appBundleContainer,
+      appBundleIdentifier,
       container.description
     ]
   }
