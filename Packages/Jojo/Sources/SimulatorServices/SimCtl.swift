@@ -9,16 +9,16 @@ import Foundation
 
 
 public struct SimCtl {
-  public init() {
+  public init(xcRunURL : URL = URL(fileURLWithPath: "/usr/bin/xcrun")) {
+    self.xcRunURL = xcRunURL
   }
   
-  let xcRunFileURL : URL = URL(fileURLWithPath: "/usr/bin/xcrun")
+  let xcRunURL : URL
   
   public func run<SubcommandType: Subcommand>(_ subcommand: SubcommandType) async throws -> SubcommandType.OutputType {
     let process = Process()
-    process.executableURL = xcRunFileURL
+    process.executableURL = xcRunURL
     process.arguments = ["simctl"] + subcommand.arguments
-    print(process.arguments)
     let data : Data?
     do {
       data = try await process.run(timeout: .distantFuture)

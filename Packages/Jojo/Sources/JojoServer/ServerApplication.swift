@@ -51,28 +51,8 @@ public class ServerApplication {
   var env : Environment
   let app : Application
   static let simctl = SimCtl()
-//  public static func getSimulatorAppDataPath () throws -> String? {
-//    let process = Process()
-//    let pipe = Pipe()
-//    process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
-//    process.arguments = [
-//      "simctl",
-//      "get_app_container",
-//      "booted",
-//      "com.BrightDigit.Jojo.watchkitapp",
-//      "data"
-//    ]
-//    process.standardOutput = pipe
-//    try process.run()
-//    process.waitUntilExit()
-//    guard let data = try pipe.fileHandleForReading.readToEnd() else {
-//      return nil
-//    }
-//
-//    return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-//  }
   
-  public static func saveToSimulator(_ request: Request) async throws {
+  public static func saveToSimulators(_ request: Request) async throws {
     guard let body = request.body.data  else {
       throw Abort(.noContent)
     }
@@ -82,22 +62,9 @@ public class ServerApplication {
     let containerPaths = try await simctl.fetchContainerPaths(appBundleIdentifier: "com.BrightDigit.Jojo.watchkitapp", type: .data)
     
     let filePaths = containerPaths.map { $0.appending("/" + relativePath) }
-//    guard let dataDirectoryPath = try Self.getSimulatorAppDataPath() else {
-//      throw Abort(.notFound)
-//    }
-    
-    
-//    let dataDirectoryURL = URL(fileURLWithPath: dataDirectoryPath)
-//
-//    let tmpDirectoryURL = dataDirectoryURL.appendingPathComponent("tmp", isDirectory: true)
-//
-//    let fileURL = tmpDirectoryURL.appendingPathComponent( "com.BrightDigit.Jojo.SignInWithApple")
-//
-//    let filePath = fileURL.absoluteURL.path
     
     try await withThrowingTaskGroup(of: Void.self) { taskGroup in
       for filePath in filePaths {
-        print(filePath)
         taskGroup.addTask {
           let fileHandle : NIOFileHandle
           fileHandle = try await request.application.fileio.openFile(path: filePath, mode: .write, flags: .allowFileCreation(), eventLoop: request.eventLoop).get()
@@ -110,11 +77,7 @@ public class ServerApplication {
         
       }
     }
-    
-    
-    //FileManager.default.createFile(atPath: filePath, contents: Data(buffer: body))
   }
-  // configures your application
   fileprivate static func user(_ req: Request, _ token: AppleIdentityToken, _ userBody: SIWARequestBody) async throws -> User {
     let user = try await User.query(on: req.db)
       .filter(\.$appleUserIdentifier == token.subject.value)

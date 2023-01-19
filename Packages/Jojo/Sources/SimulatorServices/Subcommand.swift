@@ -1,4 +1,5 @@
 import Foundation
+
 public protocol Subcommand {
   associatedtype OutputType
   
