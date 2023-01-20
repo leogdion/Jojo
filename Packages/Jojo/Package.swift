@@ -18,7 +18,6 @@ let package = Package(
           name: "JojoServer",
           targets: ["JojoServer"]
         ),
-        .library(name: "SimulatorServices", targets: ["SimulatorServices"]),
         .executable(name: "simulators", targets: ["simulators"]),
         .executable(
           name: "jojod",
@@ -30,6 +29,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.0.0"),
         .package(url: "https://github.com/vapor/jwt.git", from: "4.0.0"),
+        .package(path: "Packages/SimulatorServices")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -49,7 +49,6 @@ let package = Package(
                 "SimulatorServices"
           ]
         ),
-        .target(name: "SimulatorServices"),
         .executableTarget(name: "jojod", dependencies: ["JojoServer"]),
         .executableTarget(name: "simulators", dependencies: ["SimulatorServices"])
     ]

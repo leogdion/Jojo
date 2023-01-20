@@ -1,0 +1,4 @@
+[submodule "Packages/SimulatorServices"]
+	path = Packages/Jojo/Packages/SimulatorServices
+	url = git@github.com:brightdigit/SimulatorServices.git
+	branch = jojo-demo

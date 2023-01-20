@@ -26,18 +26,11 @@ class AuthenticationObject<OutputType : Decodable> : ObservableObject {
     
     
     let dataPublisher = directoryObserver.directoryEventPublisher().compactMap {_ in
-      //return try? Data(contentsOf: FileManager.default.temporaryDirectory.appendingPathComponent("com.BrightDigit.Jojo.SignInWithApple"))
       return try? Data(contentsOf: self.sourceFileURL)
     }
     
     let dataResponsePublisher = dataPublisher.compactMap{$0}.map { data -> URLRequest in
       return self.createRequestFromData(data)
-//      var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
-//      urlRequest.httpMethod = "POST"
-//      urlRequest.httpBody = data
-//      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")  // the request is JSON
-//      urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")        // the expected
-//      return urlRequest
     }.map { urlRequest in
       return self.urlSession.dataTaskPublisher(for: urlRequest)
     }.switchToLatest()
@@ -75,7 +68,6 @@ class AuthenticationObject<OutputType : Decodable> : ObservableObject {
 }
 
 struct ContentView: View {
-  //@StateObject var directoryObserver = DirectoryObserver()
   @State var error : Error?
   @StateObject var authenticationObject = AuthenticationObject<UserResponse>(
     sourceFileURL: FileManager.default.temporaryDirectory.appendingPathComponent("com.BrightDigit.Jojo.SignInWithApple"),
