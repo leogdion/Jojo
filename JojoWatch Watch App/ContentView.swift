@@ -8,6 +8,7 @@
 import SwiftUI
 import JojoModels
 import Combine
+import os.log
 
 class AuthenticationObject<OutputType : Decodable> : ObservableObject {
   @Published var userResponse: OutputType?
@@ -17,6 +18,7 @@ class AuthenticationObject<OutputType : Decodable> : ObservableObject {
   let sourceFileURL : URL
   let urlSession : URLSession
   let createRequestFromData : (Data) -> URLRequest
+  private let logger = Logger()
   
   init(sourceFileURL : URL, urlSession : URLSession = .shared, _ createRequestFromData: @escaping (Data) -> URLRequest ) {
     self.sourceFileURL = sourceFileURL
@@ -26,10 +28,12 @@ class AuthenticationObject<OutputType : Decodable> : ObservableObject {
     
     
     let dataPublisher = directoryObserver.directoryEventPublisher().compactMap {_ in
+      
       return try? Data(contentsOf: self.sourceFileURL)
     }
     
     let dataResponsePublisher = dataPublisher.compactMap{$0}.map { data -> URLRequest in
+      self.logger.info("[SimulatorServices] - Authenticating from the watch")
       return self.createRequestFromData(data)
     }.map { urlRequest in
       return self.urlSession.dataTaskPublisher(for: urlRequest)
@@ -40,7 +44,8 @@ class AuthenticationObject<OutputType : Decodable> : ObservableObject {
       .map(\.data)
       .decode(type: OutputType.self, decoder: JSONDecoder())
     .map(Result.success).catch{ error in
-      Just(Result.failure(error))
+      self.logger.info("[SimulatorServices] - Authentication failure: \(error.localizedDescription)")
+      return Just(Result<OutputType, Error>.failure(error))
     }.share()
 
     let failurePublisher = userResponseResultPublisher.compactMap{
@@ -55,6 +60,7 @@ class AuthenticationObject<OutputType : Decodable> : ObservableObject {
     let successPublisher = userResponseResultPublisher.compactMap{
       switch $0 {
       case .success(let value):
+        self.logger.info("[SimulatorServices] - Authentication Success.")
         return value
       default:
         return nil
@@ -68,6 +74,7 @@ class AuthenticationObject<OutputType : Decodable> : ObservableObject {
 }
 
 struct ContentView: View {
+  private let logger = Logger()
   @State var error : Error?
   @StateObject var authenticationObject = AuthenticationObject<UserResponse>(
     sourceFileURL: FileManager.default.temporaryDirectory.appendingPathComponent("com.BrightDigit.Jojo.SignInWithApple"),

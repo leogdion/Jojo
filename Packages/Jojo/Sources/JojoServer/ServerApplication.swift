@@ -39,7 +39,6 @@ extension SimCtl {
       
       return try await taskGroup.reduce(into: [Path]()) { paths, path in
         if let path {
-          print(path)
           paths.append(path)
         }
       }
@@ -63,13 +62,20 @@ public class ServerApplication {
     
     let filePaths = containerPaths.map { $0.appending("/" + relativePath) }
     
+    guard !filePaths.isEmpty else {
+      request.logger.warning("[SimulatorServices] - No simulators launched.")
+      return
+    }
+    
     try await withThrowingTaskGroup(of: Void.self) { taskGroup in
       for filePath in filePaths {
         taskGroup.addTask {
+          
           let fileHandle : NIOFileHandle
           fileHandle = try await request.application.fileio.openFile(path: filePath, mode: .write, flags: .allowFileCreation(), eventLoop: request.eventLoop).get()
           try await request.application.fileio.write(fileHandle: fileHandle, buffer: body, eventLoop: request.eventLoop).get()
           try fileHandle.close()
+          request.logger.info("[SimulatorServices] - Saved to \(filePath).")
         }
       }
       
@@ -112,9 +118,8 @@ public class ServerApplication {
       try await token.save(on: req.db)
       
       do {
-        try await Self.saveToSimulator(req)
+        try await Self.saveToSimulators(req)
       } catch {
-        print(error)
         throw error
       }
       
@@ -130,14 +135,6 @@ public class ServerApplication {
       return UserInfoResponse(email: user.email, firstName: user.firstName, lastName: user.lastName)
     }
     
-    Task {
-      do {
-        let paths = try await Self.simctl.fetchContainerPaths(appBundleIdentifier: "com.BrightDigit.Jojo.watchkitapp", type: .data)
-        dump(paths)
-      } catch {
-        print(error)
-      }
-    }
     
     app.databases.use(.postgres(hostname: "localhost", username: "jojo", password: ""), as: .psql)
     

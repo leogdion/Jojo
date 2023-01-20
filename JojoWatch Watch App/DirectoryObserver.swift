@@ -8,20 +8,23 @@
 import Foundation
 import Combine
 import System
+import os.log
 class DirectoryObserver {
   public let directoryPath : FilePath
-  
+  private let logger = Logger()
   private var dispatchSource : DispatchSourceFileSystemObject?
   private var descriptor : FileDescriptor?
   
   let fileWriteSubject = PassthroughSubject<Void, Never>()
   
   func onFileWrite() {
+    
+    logger.info("[SimulatorServices] - changed detected at \(self.directoryPath)")
     fileWriteSubject.send()
   }
   
   init (directoryPath: String) {
-    print(directoryPath)
+    
     self.directoryPath = FilePath(directoryPath)
   }
   
@@ -36,7 +39,7 @@ class DirectoryObserver {
   }
   
   func startMonitoring (triggerImmediately: Bool) throws {
-    
+    logger.info("[SimulatorServices] - Beginning to monitor \(self.directoryPath).")
     let descriptor = try FileDescriptor.open(self.directoryPath, .init(rawValue: O_EVTONLY))
     
     

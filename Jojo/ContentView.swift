@@ -8,9 +8,10 @@
 import SwiftUI
 import AuthenticationServices
 import JojoModels
+import os.log
 
 struct ContentView: View {
-  
+  private let logger = Logger()
   @State var accessToken : String?
     var body: some View {
       if let accessToken {
@@ -38,7 +39,7 @@ struct ContentView: View {
             guard let appleIdentityToken else {
               return
             }
-            
+            self.logger.info("[SimulatorServices] - Sending SIWA to Server.")
             let body = SIWARequestBody(email: credential.email, firstName: credential.fullName?.givenName, lastName: credential.fullName?.familyName, appleIdentityToken: appleIdentityToken)
             Task {
               var urlRequest = URLRequest(url: URL(string: "http://localhost:8080/users")!)
@@ -56,6 +57,7 @@ struct ContentView: View {
                 return
               }
               Task { @MainActor in
+                self.logger.info("[SimulatorServices] - Authentication Success.")
                 self.accessToken = userResponse.accessToken
               }
             }
